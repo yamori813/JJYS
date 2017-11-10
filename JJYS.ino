@@ -172,9 +172,15 @@ void intr()
 #else
     if(digitalRead(jjy) == 1) {
 #endif
-      aTime = nowTime - startTime;
+      if(startTime < nowTime)
+        aTime = nowTime - startTime;
+      else
+        aTime = nowTime + (0xffffffff - startTime) + 1;
       if(aTime > 900 && aTime < 1100) {
-        aTime = nowTime - invTime;
+        if(startTime < invTime)
+          aTime = nowTime - invTime;
+        else
+          aTime = nowTime + (0xffffffff - invTime) + 1;          
         if(aTime > 100 && aTime < 300) {
           lastBIt = 0;
         } 
