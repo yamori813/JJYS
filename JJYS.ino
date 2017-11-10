@@ -6,6 +6,7 @@
 #include <MsTimer2.h>
 
 //#define DEBUG
+//#define INVERT
 
 int pin = 13;
 int jjy = 2;
@@ -166,7 +167,11 @@ void intr()
   digitalWrite(pin, digitalRead(jjy));
   nowTime = millis();
   if(nowTime - lastTime > 10) {  /* workaround noise */
+#ifdef INVERT
     if(digitalRead(jjy) == 0) {
+#else
+    if(digitalRead(jjy) == 1) {
+#endif
       aTime = nowTime - startTime;
       if(aTime > 900 && aTime < 1100) {
         aTime = nowTime - invTime;
@@ -252,6 +257,5 @@ void intr()
   }
   lastTime = nowTime;
 }
-
 
 
