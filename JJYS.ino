@@ -1,6 +1,10 @@
 /*
  * SEIKO TIME SYSTEMS INC. TDC-300 modoki Program for ntpd 40 driver
- * JJY Signal input to PIN2
+ * JJY Signal input from PIN2 and send 2400 baudrate to tx.
+ * This code developed Arduino 1.0.6 used by MsTimer2 library.
+ * You must use external 16MHz crystal for best accuracy.
+ *
+ * Copyright (c) 2017 Hiroki Mori
  */
 
 #include <MsTimer2.h>
