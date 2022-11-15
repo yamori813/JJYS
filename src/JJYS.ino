@@ -10,7 +10,7 @@
 #include <MsTimer2.h>
 
 //#define DEBUG
-//#define INVERT
+#define INVERT
 
 int pin = 13;
 int jjy = 2;
