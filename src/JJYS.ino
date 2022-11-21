@@ -1,8 +1,11 @@
 /*
  * SEIKO TIME SYSTEMS INC. TDC-300 modoki Program for ntpd 40 driver
+ * TCD-300 is mode 6 at ntpd.
  * JJY Signal input from PIN2 and send 2400 baudrate to tx.
+ * PIN3 is connect to GND then NORMAL edge otherwise INVERT edge.
  * This code developed Arduino 1.0.6 used by MsTimer2 library.
  * You must use external 16MHz crystal for best accuracy.
+ * Also you need insulation from time signal module from Arduino.
  *
  * Copyright (c) 2017 Hiroki Mori
  */
@@ -10,10 +13,10 @@
 #include <MsTimer2.h>
 
 //#define DEBUG
-#define INVERT
 
 int pin = 13;
 int jjy = 2;
+int mode = 3;
 unsigned long startTime;
 unsigned long invTime;
 unsigned long lastTime;
@@ -21,6 +24,7 @@ int lastBIt;
 int pos;
 int jjystat;
 int year, day, hour, minutes, week;
+int edge;
 
 struct nexclock {
   int year;
@@ -119,10 +123,12 @@ void setdatetime(int pos, int bit){
 void setup()
 {
   pinMode(pin, OUTPUT);
+  pinMode(mode, INPUT_PULLUP);
   attachInterrupt(0, intr, CHANGE);
   Serial.begin(2400);
   pos = 0;
   jjystat = 0;
+  edge = digitalRead(mode) ? 0 : 1;
 }
 
 void sendtime() {
@@ -171,11 +177,7 @@ void intr()
   digitalWrite(pin, digitalRead(jjy));
   nowTime = millis();
   if(nowTime - lastTime > 10) {  /* workaround noise */
-#ifdef INVERT
-    if(digitalRead(jjy) == 0) {
-#else
-    if(digitalRead(jjy) == 1) {
-#endif
+    if(digitalRead(jjy) == edge) {
       if(startTime < nowTime)
         aTime = nowTime - startTime;
       else
