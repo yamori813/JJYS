@@ -156,6 +156,12 @@ void sendtime() {
   sprintf(messageBuf, "%c%c%c", 0x02, 0xe5, 0x03);
   Serial.print(messageBuf);
 #endif
+  if((nexclock.minits == 15 || nexclock.minits == 45) && pos == 39) {
+    detachInterrupt(0);
+  }
+  if((nexclock.minits == 15 || nexclock.minits == 45) && pos == 50) {
+    attachInterrupt(0, intr, CHANGE);
+  }
   if(pos == 59) {
     MsTimer2::stop();
     MsTimer2::set(1000, sendtime);
