@@ -147,16 +147,16 @@ void sendtime() {
     next = 0;
   else
     next = pos + 1;
-  if(debug)
+  if(debug) {
     sprintf(messageBuf, "%02d%02d%02d%d%02d%02d%02d\r\n", 
       nexclock.year , nexclock.manth, nexclock.day, 
       nexclock.week, nexclock.hour, nexclock.minits, next);
-  else
+    Serial.print(messageBuf);
+   } else {
     sprintf(messageBuf, "%c%02d%02d%02d%d%02d%02d%02d%c", 
       0x02, nexclock.year , nexclock.manth, nexclock.day, 
       nexclock.week, nexclock.hour, nexclock.minits, next, 0x03);
-  Serial.print(messageBuf);
-  if(debug) {
+    Serial.print(messageBuf);
     sprintf(messageBuf, "%c%c%c", 0x02, 0xe5, 0x03);
     Serial.print(messageBuf);
   }
