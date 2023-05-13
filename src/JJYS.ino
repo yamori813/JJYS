@@ -12,11 +12,11 @@
 
 #include <MsTimer2.h>
 
-//#define DEBUG
+#define LED	13
+#define JJY	2
+#define MODE	3
+#define DEBUG	4
 
-int pin = 13;
-int jjy = 2;
-int mode = 3;
 unsigned long startTime;
 unsigned long invTime;
 unsigned long lastTime;
@@ -25,6 +25,7 @@ int pos;
 int jjystat;
 int year, day, hour, minutes, week;
 int edge;
+int debug;
 
 struct nexclock {
   int year;
@@ -122,13 +123,17 @@ void setdatetime(int pos, int bit){
 
 void setup()
 {
-  pinMode(pin, OUTPUT);
-  pinMode(mode, INPUT_PULLUP);
+  pinMode(LED, OUTPUT);
+  pinMode(MODE, INPUT_PULLUP);
+  pinMode(DEBUG, INPUT_PULLUP);
   attachInterrupt(0, intr, CHANGE);
   Serial.begin(2400);
   pos = 0;
   jjystat = 0;
-  edge = digitalRead(mode) ? 0 : 1;
+  edge = digitalRead(MODE) ? 0 : 1;
+  debug = digitalRead(DEBUG) ? 0 : 1;
+  if(debug)
+    Serial.println("Debug mode");
 }
 
 void sendtime() {
@@ -142,20 +147,19 @@ void sendtime() {
     next = 0;
   else
     next = pos + 1;
-#ifdef DEBUG
-  sprintf(messageBuf, "%02d%02d%02d%d%02d%02d%02d\r\n", 
-  nexclock.year , nexclock.manth, nexclock.day, 
-  nexclock.week, nexclock.hour, nexclock.minits, next);
-#else
-  sprintf(messageBuf, "%c%02d%02d%02d%d%02d%02d%02d%c", 
-  0x02, nexclock.year , nexclock.manth, nexclock.day, 
-  nexclock.week, nexclock.hour, nexclock.minits, next, 0x03);
-#endif
+  if(debug)
+    sprintf(messageBuf, "%02d%02d%02d%d%02d%02d%02d\r\n", 
+      nexclock.year , nexclock.manth, nexclock.day, 
+      nexclock.week, nexclock.hour, nexclock.minits, next);
+  else
+    sprintf(messageBuf, "%c%02d%02d%02d%d%02d%02d%02d%c", 
+      0x02, nexclock.year , nexclock.manth, nexclock.day, 
+      nexclock.week, nexclock.hour, nexclock.minits, next, 0x03);
   Serial.print(messageBuf);
-#ifndef DEBUG
-  sprintf(messageBuf, "%c%c%c", 0x02, 0xe5, 0x03);
-  Serial.print(messageBuf);
-#endif
+  if(debug) {
+    sprintf(messageBuf, "%c%c%c", 0x02, 0xe5, 0x03);
+    Serial.print(messageBuf);
+  }
   if((nexclock.minits == 15 || nexclock.minits == 45) && pos == 39) {
     detachInterrupt(0);
   }
@@ -180,10 +184,10 @@ void intr()
 {
   unsigned long nowTime;
   unsigned long aTime;
-  digitalWrite(pin, digitalRead(jjy));
+  digitalWrite(LED, digitalRead(JJY));
   nowTime = millis();
   if(nowTime - lastTime > 10) {  /* workaround noise */
-    if(digitalRead(jjy) == edge) {
+    if(digitalRead(JJY) == edge) {
       if(startTime < nowTime)
         aTime = nowTime - startTime;
       else
@@ -202,9 +206,8 @@ void intr()
         else if(aTime > 700 && aTime < 900) {
           if(lastBIt == 2) {
             if(jjystat == 0) {
-#ifdef DEBUG
-              Serial.println("GET DUBLE MERKER");
-#endif
+              if(debug)
+                Serial.println("GET DUBLE MERKER");
               jjystat = 1;
               pos = 0;
               minutes = 0;
@@ -251,11 +254,11 @@ void intr()
       else {
         if(jjystat != 0 && !((minutes == 15 || minutes == 45) && 
           (pos >= 40 && pos <= 50))) {
-#ifdef DEBUG
-          Serial.println("");
-          Serial.print("Error ");
-          Serial.println(aTime);
-#endif
+          if(debug) {
+            Serial.println("");
+            Serial.print("Error ");
+            Serial.println(aTime);
+          }
           if(jjystat == 2)
             MsTimer2::stop();
           jjystat = 0;
