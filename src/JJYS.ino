@@ -252,17 +252,14 @@ void intr()
         }
       }
       else {
-        if(jjystat != 0 && !((minutes == 15 || minutes == 45) && 
-          (pos >= 40 && pos <= 50))) {
-          if(debug) {
-            Serial.println("");
-            Serial.print("Error ");
-            Serial.println(aTime);
-          }
-          if(jjystat == 2)
-            MsTimer2::stop();
-          jjystat = 0;
+        if(debug) {
+          Serial.println("");
+          Serial.print("Error ");
+          Serial.println(aTime);
         }
+        if(jjystat == 2)
+          MsTimer2::stop();
+        jjystat = 0;
       }
       startTime = nowTime;
       if(jjystat == 1) {
