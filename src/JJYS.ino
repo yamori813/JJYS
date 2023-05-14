@@ -251,6 +251,7 @@ void intr()
           }
         }
       }
+/*
       else {
         if(debug) {
           Serial.println("");
@@ -261,6 +262,7 @@ void intr()
           MsTimer2::stop();
         jjystat = 0;
       }
+*/
       startTime = nowTime;
       if(jjystat == 1) {
         ++pos;
