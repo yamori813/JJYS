@@ -30,3 +30,8 @@ jobs:
     - name: Run PlatformIO
       run: |
         pio run 
+    - name: Archive
+      uses: actions/upload-artifact@v2
+      with:
+        name: firmware
+        path: .pio/build/*/firmware.bin
