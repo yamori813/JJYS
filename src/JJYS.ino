@@ -186,97 +186,96 @@ void intr()
   unsigned long aTime;
   digitalWrite(LED, digitalRead(JJY));
   nowTime = millis();
-  if(nowTime - lastTime > 10) {  /* workaround noise */
-    if(digitalRead(JJY) == edge) {
-      if(startTime < nowTime)
-        aTime = nowTime - startTime;
+  if(digitalRead(JJY) == edge) {
+    if(startTime < nowTime)
+      aTime = nowTime - startTime;
+    else
+      aTime = nowTime + (0xffffffff - startTime) + 1;
+    if(debug) {
+      Serial.print(aTime);
+      Serial.print(",");
+    }
+    if(aTime > 980 && aTime < 1020) {   // 20ms margin
+      if(startTime < invTime)
+        aTime = nowTime - invTime;
       else
-        aTime = nowTime + (0xffffffff - startTime) + 1;
-      if(aTime > 900 && aTime < 1100) {
-        if(startTime < invTime)
-          aTime = nowTime - invTime;
-        else
-          aTime = nowTime + (0xffffffff - invTime) + 1;          
-        if(aTime > 100 && aTime < 300) {
-          lastBIt = 0;
-        } 
-        else if(aTime > 400 && aTime < 600) {
-          lastBIt = 1;
-        } 
-        else if(aTime > 700 && aTime < 900) {
-          if(lastBIt == 2) {
-            if(jjystat == 0) {
-              if(debug)
-                Serial.println("GET DUBLE MERKER");
-              jjystat = 1;
-              pos = 0;
-              minutes = 0;
-              hour = 0;
-              day = 0;
-              year = 0;
-              week = 0;
-            }
+        aTime = nowTime + (0xffffffff - invTime) + 1;          
+      if(aTime > 100 && aTime < 300) {
+        lastBIt = 0;
+      } 
+      else if(aTime > 400 && aTime < 600) {
+        lastBIt = 1;
+      } 
+      else if(aTime > 700 && aTime < 900) {
+        if(lastBIt == 2) {
+          if(jjystat == 0) {
+            if(debug)
+              Serial.println("GET DUBLE MERKER");
+            jjystat = 1;
+            pos = 0;
+            minutes = 0;
+            hour = 0;
+            day = 0;
+            year = 0;
+            week = 0;
           }
-          lastBIt = 2;
-        } 
-        else {   /* error */
+        }
+        lastBIt = 2;
+      } 
+      else {   /* error */
+        if(jjystat == 2)
+          MsTimer2::stop();
+        jjystat = 0;
+      }
+
+      if(jjystat != 0) {
+        if((pos == 0 || pos % 10 == 9) && lastBIt != 2) {   /* error */
           if(jjystat == 2)
             MsTimer2::stop();
           jjystat = 0;
-        }
-
-        if(jjystat != 0) {
-          if((pos == 0 || pos % 10 == 9) && lastBIt != 2) {   /* error */
-            if(jjystat == 2)
-              MsTimer2::stop();
-            jjystat = 0;
-          } 
-          else {
-            setdatetime(pos, lastBIt);
-            if(pos == 58) {
-              calcnexttime(year, day, hour, minutes, week);
-              if(minutes != 14 && minutes != 44) {
-                year = 0;
-                week = 0;
-              }
-              minutes = 0;
-              hour = 0;
-              day = 0;
-              MsTimer2::set(900, sendtime);
-              MsTimer2::start();
-              if(jjystat == 1) {
-                jjystat = 2;
-              }
+        } 
+        else {
+          setdatetime(pos, lastBIt);
+          if(pos == 58) {
+            calcnexttime(year, day, hour, minutes, week);
+            if(minutes != 14 && minutes != 44) {
+              year = 0;
+              week = 0;
+            }
+            minutes = 0;
+            hour = 0;
+            day = 0;
+            MsTimer2::set(900, sendtime);
+            MsTimer2::start();
+            if(jjystat == 1) {
+              jjystat = 2;
             }
           }
         }
       }
-      else {
-        /* ignore callsine */
-        if(!((minutes == 15 || minutes == 45) && pos == 50)) {
-          if(debug) {
-            Serial.println("");
-            Serial.print("Error ");
-            Serial.println(aTime);
-          }
-//        if(jjystat == 2)
-//          MsTimer2::stop();
-          jjystat = 0;
-        }
-      }
-      startTime = nowTime;
-      if(jjystat == 1) {
-        ++pos;
-        if(pos == 60) {
-          pos = 0;
-        }
-      }
-    } 
-    else {
-      invTime = nowTime;
     }
+    else {
+      /* ignore callsine */
+      if(!((minutes == 15 || minutes == 45) && pos == 50)) {
+        if(debug) {
+          Serial.println("");
+          Serial.print("Error ");
+          Serial.println(aTime);
+        }
+        jjystat = 0;
+      }
+    }
+    startTime = nowTime;
+    if(jjystat == 1) {
+      ++pos;
+      if(pos == 60) {
+        pos = 0;
+      }
+    }
+  } 
+  else {
+    invTime = nowTime;
   }
   lastTime = nowTime;
 }
-
 
