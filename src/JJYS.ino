@@ -1,4 +1,3 @@
-
 /*
  * SEIKO TIME SYSTEMS INC. TDC-300 modoki Program for ntpd 40 driver
  * TCD-300 is mode 6 at ntpd.
