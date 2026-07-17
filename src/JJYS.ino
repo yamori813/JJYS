@@ -195,7 +195,7 @@ void intr()
       Serial.print(aTime);
       Serial.print(",");
     }
-    if(aTime > 980 && aTime < 1020) {   // 20ms margin
+    if(aTime > 900 && aTime < 1100) {   // 100ms margin
       if(startTime < invTime)
         aTime = nowTime - invTime;
       else
